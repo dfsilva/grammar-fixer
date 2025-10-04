@@ -16,7 +16,6 @@ class GroqAPIService {
             _ = try await makeTestRequest()
             return true
         } catch {
-            print("API test failed: \(error)")
             return false
         }
     }

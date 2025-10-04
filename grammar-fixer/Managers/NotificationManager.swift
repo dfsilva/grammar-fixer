@@ -18,9 +18,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     
     func requestPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
-            if let error = error {
-                print("Notification permission error: \(error)")
-            }
+            // Handle permission result silently
         }
     }
     
@@ -37,9 +35,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         )
         
         UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("Failed to show notification: \(error)")
-            }
+            // Handle notification result silently
         }
     }
     
@@ -54,6 +50,6 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     // MARK: - UNUserNotificationCenterDelegate
     
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([.alert, .sound])
+        completionHandler([.banner, .sound])
     }
 }

@@ -29,11 +29,9 @@ class KeychainManager {
         SecItemDelete(query as CFDictionary)
         
         // Add new item
-        let status = SecItemAdd(query as CFDictionary, nil)
+        _ = SecItemAdd(query as CFDictionary, nil)
         
-        if status != errSecSuccess {
-            print("Failed to save to keychain: \(status)")
-        }
+        // Keychain save completed
     }
     
     func load(for key: String) -> String? {

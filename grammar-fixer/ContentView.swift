@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var showingApiKeyInput = false
     @State private var apiKeyInput = ""
     @State private var refreshTrigger = 0
+    @State private var showingHistory = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -129,12 +130,9 @@ struct ContentView: View {
                         Spacer()
                         
                         Button("Copy") {
-                            print("📋 Copy button pressed. Text to copy: '\(correctedText)'")
                             NSPasteboard.general.clearContents()
                             NSPasteboard.general.setString(correctedText, forType: .string)
-                            print("📋 Text copied to clipboard")
                             // Show simple notification instead
-                            print("📋 Text copied successfully")
                         }
                         .buttonStyle(.borderless)
                         .foregroundColor(.blue)
@@ -154,28 +152,12 @@ struct ContentView: View {
                             .foregroundColor(displayText == "No correction yet" ? .secondary : .primary)
                             .font(.system(size: 13, weight: displayText == "No correction yet" ? .medium : .semibold))
                             .id("display-text-\(refreshTrigger)")
-                            .onAppear {
-                                print("📱 UI Text onAppear - displayText: '\(displayText)', correctedText: '\(correctedText)'")
-                            }
-                            .onChange(of: displayText) { _, newValue in
-                                print("📱 UI Text onChange - displayText changed to: '\(newValue)'")
-                            }
                     }
                     .frame(minHeight: 80, maxHeight: 80)
                     .id("scroll-container-\(refreshTrigger)")
                 }
                 .opacity(displayText == "No correction yet" ? 0.6 : 1.0)
                 .id("corrected-section-\(refreshTrigger)")
-                .onAppear {
-                    print("📺 Corrected text UI appeared with text: '\(correctedText)', displayText: '\(displayText)'")
-                }
-                .onChange(of: correctedText) { oldValue, newValue in
-                    print("📺 Corrected text changed from '\(oldValue)' to '\(newValue)'")
-                    print("📺 Force UI refresh with trigger: \(refreshTrigger)")
-                }
-                .onChange(of: displayText) { oldValue, newValue in
-                    print("📺 Display text changed from '\(oldValue)' to '\(newValue)'")
-                }
                 
                 if let error = grammarService.lastError {
                     HStack {
@@ -197,6 +179,13 @@ struct ContentView: View {
                         }
                         .frame(maxWidth: .infinity)
                         
+                        Button("History") {
+                            showingHistory = true
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    
+                    HStack(spacing: 8) {
                         Button("Check Permissions") {
                             if AccessibilityManager.shared.hasPermissions() {
                                 NotificationManager.shared.showBanner(
@@ -246,6 +235,9 @@ struct ContentView: View {
                 }
             )
         }
+        .sheet(isPresented: $showingHistory) {
+            CorrectionHistoryView()
+        }
         .onAppear {
             apiKeyInput = settingsManager.groqAPIKey
             grammarService.checkAPIStatus()
@@ -291,28 +283,21 @@ struct ContentView: View {
     }
     
     private func clearText() {
-        print("🧹 Clearing manual text and response")
         inputText = ""
         correctedText = ""
         displayText = "No correction yet"
         refreshTrigger += 1
-        print("🧹 Text cleared - inputText: '\(inputText)', displayText: '\(displayText)'")
     }
     
     private func correctManualText() {
         Task {
-            print("🔧 Starting manual text correction for: '\(inputText)'")
             let result = await grammarService.correctText(inputText)
-            print("🔧 Received result: '\(result)'")
             
             await MainActor.run {
                 // Set both the corrected text and display text
                 correctedText = result
                 displayText = result.isEmpty ? "No correction yet" : result
                 refreshTrigger += 1
-                print("🔧 Set correctedText to: '\(correctedText)', isEmpty: \(correctedText.isEmpty)")
-                print("🔧 Set displayText to: '\(displayText)'")
-                print("🔧 refreshTrigger: \(refreshTrigger)")
             }
         }
     }
@@ -389,7 +374,6 @@ struct SettingsView: View {
                     .foregroundColor(.secondary)
                 
                 Button(action: {
-                    print("Test Connection button tapped")
                     settingsManager.checkAPIStatus()
                 }) {
                     Text("Test Connection")
@@ -409,7 +393,6 @@ struct SettingsView: View {
             
             HStack {
                 Button(action: {
-                    print("Reset Settings button tapped")
                     settingsManager.reset()
                 }) {
                     Text("Reset Settings")
@@ -422,7 +405,6 @@ struct SettingsView: View {
                 Spacer()
                 
                 Button(action: {
-                    print("Done button tapped")
                     // Explicitly save settings by triggering UserDefaults synchronization
                     UserDefaults.standard.synchronize()
                     

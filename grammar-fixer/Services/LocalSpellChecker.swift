@@ -13,13 +13,11 @@ class LocalSpellChecker {
     
     func correctText(_ text: String) -> String {
         var correctedText = text
-        let range = NSRange(location: 0, length: text.utf16.count)
         
         // Find and correct misspelled words
         let misspelledRange = spellChecker.checkSpelling(of: text, startingAt: 0)
         
         if misspelledRange.location != NSNotFound {
-            let misspelledWord = (text as NSString).substring(with: misspelledRange)
             let guesses = spellChecker.guesses(forWordRange: misspelledRange, in: text, language: nil, inSpellDocumentWithTag: 0)
             
             if let bestGuess = guesses?.first {

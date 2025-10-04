@@ -49,10 +49,8 @@ class ShortcutManager: ObservableObject {
         )
         
         if status != noErr {
-            print("Failed to register global shortcut: \(status)")
             isRegistered = false
         } else {
-            print("Global shortcut registered successfully (⌘+Shift+G)")
             isRegistered = true
         }
     }
@@ -66,16 +64,11 @@ class ShortcutManager: ObservableObject {
     }
     
     private func handleHotKeyEvent() {
-        print("🔥 Shortcut triggered (⌘+Shift+G)")
-        
         guard SettingsManager.shared.isEnabled else {
-            print("❌ Grammar Fixer is disabled")
             return
         }
         
-        print("✅ Grammar Fixer is enabled, checking accessibility permissions...")
         guard AccessibilityManager.shared.hasPermissions() else {
-            print("❌ No accessibility permissions")
             NotificationManager.shared.showNotification(
                 title: "Grammar Fixer",
                 body: "Accessibility permissions required. Please grant access in System Preferences."
@@ -83,12 +76,9 @@ class ShortcutManager: ObservableObject {
             return
         }
         
-        print("✅ Accessibility permissions granted, getting selected text...")
         if let selectedText = AccessibilityManager.shared.getSelectedText(), !selectedText.isEmpty {
-            print("✅ Selected text found: '\(selectedText)'")
             TextSelectionManager.shared.processSelectedText(selectedText)
         } else {
-            print("❌ No text selected or empty text")
             NotificationManager.shared.showNotification(
                 title: "Grammar Fixer",
                 body: "No text selected. Please select some text first."

@@ -17,11 +17,6 @@ class AccessibilityManager {
     
     func checkAccessibilityPermission() -> Bool {
         let isProcessTrusted = AXIsProcessTrusted()
-        print("🔐 AXIsProcessTrusted() result: \(isProcessTrusted)")
-        
-        // Get current app bundle path for debugging
-        let bundlePath = Bundle.main.bundlePath
-        print("🔐 App bundle path: \(bundlePath)")
         
         return isProcessTrusted
     }
@@ -32,7 +27,7 @@ class AccessibilityManager {
         ] as CFDictionary)
         
         if !trusted {
-            print("Accessibility permission required. Please grant access in System Preferences.")
+            // Permission dialog will be shown automatically
         }
     }
     
@@ -45,14 +40,9 @@ class AccessibilityManager {
     }
     
     func getSelectedText() -> String? {
-        print("🔍 Getting selected text...")
-        
         guard checkAccessibilityPermission() else {
-            print("❌ No accessibility permission")
             return nil
         }
-        
-        print("✅ Accessibility permission granted")
         
         // Add a small delay to ensure UI is ready
         Thread.sleep(forTimeInterval: 0.1)
@@ -63,7 +53,6 @@ class AccessibilityManager {
         }
         
         // Fallback: try using copy-paste approach
-        print("🔄 Trying copy-paste fallback...")
         return getSelectedTextViaCopy()
     }
     
@@ -79,10 +68,7 @@ class AccessibilityManager {
         )
         
         guard result == .success, let elementRef = focusedElementRef else {
-            print("❌ Failed to get focused element: \(result.rawValue)")
-            
             // Try alternative approach: get focused application first
-            print("🔄 Trying alternative approach: get focused application...")
             var focusedAppRef: AnyObject?
             let appResult = AXUIElementCopyAttributeValue(
                 systemWideElement,
@@ -91,7 +77,6 @@ class AccessibilityManager {
             )
             
             if appResult == .success, let appRef = focusedAppRef {
-                print("✅ Got focused application")
                 let focusedApp = appRef as! AXUIElement
                 
                 // Try to get focused element from the application
@@ -103,20 +88,13 @@ class AccessibilityManager {
                 )
                 
                 if appElementResult == .success, let appElementRef = appFocusedElementRef {
-                    print("✅ Got focused element from application")
                     let focusedElement = appElementRef as! AXUIElement
                     return getTextFromElement(focusedElement)
-                } else {
-                    print("❌ Failed to get focused element from application: \(appElementResult.rawValue)")
                 }
-            } else {
-                print("❌ Failed to get focused application: \(appResult.rawValue)")
             }
             
             return nil
         }
-        
-        print("✅ Got focused element")
         
         let focusedElement = elementRef as! AXUIElement
         return getTextFromElement(focusedElement)
@@ -131,10 +109,7 @@ class AccessibilityManager {
             &selectedText
         )
         
-        print("📝 Text selection result: \(textResult.rawValue)")
-        
         if textResult == .success, let text = selectedText as? String, !text.isEmpty {
-            print("✅ Selected text retrieved: '\(text)'")
             return text
         }
         
@@ -146,10 +121,7 @@ class AccessibilityManager {
             &allText
         )
         
-        print("📝 All text result: \(allTextResult.rawValue)")
-        
         if allTextResult == .success, let text = allText as? String {
-            print("✅ Found text value: '\(text.prefix(100))...' (truncated)")
             
             // Try to get selected range
             var selectedRange: AnyObject?
@@ -160,7 +132,6 @@ class AccessibilityManager {
             )
             
             if rangeResult == .success, let range = selectedRange {
-                print("✅ Got selected range: \(range)")
                 
                 // Extract text from range
                 let rangeValue = range as! AXValue
@@ -170,18 +141,11 @@ class AccessibilityManager {
                     let nsText = text as NSString
                     if nsRange.location + nsRange.length <= nsText.length && nsRange.length > 0 {
                         let selectedPart = nsText.substring(with: nsRange)
-                        print("✅ Extracted selected text from range: '\(selectedPart)'")
                         return selectedPart
                     }
                 }
-            } else {
-                print("❌ Failed to get selected range: \(rangeResult.rawValue)")
             }
-        } else {
-            print("❌ Failed to get text value: \(allTextResult.rawValue)")
         }
-        
-        print("❌ No selected text found")
         return nil
     }
     
@@ -219,30 +183,23 @@ class AccessibilityManager {
         }
         
         if let text = copiedText, !text.isEmpty, text != originalContent {
-            print("✅ Got selected text via copy: '\(text)'")
             return text
         } else {
-            print("❌ No text copied or same as original")
             return nil
         }
     }
     
     func replaceSelectedText(with newText: String) -> Bool {
-        print("🔄 Replacing selected text with: '\(newText)'")
-        
         guard checkAccessibilityPermission() else {
-            print("❌ No accessibility permission for replacement")
             return false
         }
         
         // Try direct accessibility approach first
         if replaceSelectedTextDirect(with: newText) {
-            print("✅ Text replaced via accessibility API")
             return true
         }
         
         // Fallback to copy-paste approach
-        print("🔄 Trying copy-paste replacement fallback...")
         return replaceSelectedTextViaPaste(with: newText)
     }
     
@@ -257,7 +214,6 @@ class AccessibilityManager {
         )
         
         guard result == .success, let elementRef = focusedElementRef else {
-            print("❌ Failed to get focused element for replacement: \(result.rawValue)")
             return false
         }
         
@@ -269,7 +225,6 @@ class AccessibilityManager {
             newText as CFString
         )
         
-        print("📝 Direct replacement result: \(setResult.rawValue)")
         return setResult == .success
     }
     
@@ -306,7 +261,6 @@ class AccessibilityManager {
             pasteboard.clearContents()
         }
         
-        print("✅ Text replacement attempted via paste")
         return true
     }
 }

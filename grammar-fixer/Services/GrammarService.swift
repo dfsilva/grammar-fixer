@@ -18,6 +18,7 @@ class GrammarService: ObservableObject {
     
     private let groqService = GroqAPIService()
     private let localChecker = LocalSpellChecker()
+    private let historyManager = CorrectionHistoryManager.shared
     
     enum APIStatus {
         case unknown
@@ -54,6 +55,12 @@ class GrammarService: ObservableObject {
             do {
                 let correctedText = try await groqService.correctGrammar(text)
                 apiStatus = .working
+                
+                // Save to history if text was changed
+                DispatchQueue.main.async {
+                    self.historyManager.addCorrection(original: text, corrected: correctedText, method: CorrectionEntry.CorrectionMethod.api)
+                }
+                
                 return correctedText
             } catch {
                 lastError = "API Error: \(error.localizedDescription)"
@@ -68,7 +75,14 @@ class GrammarService: ObservableObject {
         }
         
         // Fallback to local spell checking
-        return localChecker.correctText(text)
+        let correctedText = localChecker.correctText(text)
+        
+        // Save to history if text was changed
+        DispatchQueue.main.async {
+            self.historyManager.addCorrection(original: text, corrected: correctedText, method: CorrectionEntry.CorrectionMethod.local)
+        }
+        
+        return correctedText
     }
     
     func correctSelectedText() async {

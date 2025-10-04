@@ -21,6 +21,7 @@ A powerful macOS menu bar application that provides AI-powered grammar correctio
 - **🔔 User Notifications**: Smart notifications for feedback and status updates
 - **🎛️ Enable/Disable Toggle**: Easy on/off functionality
 - **🔑 API Key Management**: Secure API key storage in macOS Keychain
+- **📊 Correction History**: Automatic tracking of last 20 corrections with copy functionality
 - **⚙️ Interactive Setup Scripts**: Automated configuration and deployment
 - **🛠️ Command-Line Tools**: Build, test, and deployment automation
 
