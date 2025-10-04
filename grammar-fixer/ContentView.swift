@@ -100,12 +100,23 @@ struct ContentView: View {
                                 .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
                         )
                     
-                    Button(action: correctManualText) {
-                        Label("Correct Text", systemImage: "wand.and.stars.inverse")
-                            .foregroundColor(.white)
+                    HStack(spacing: 8) {
+                        Button(action: correctManualText) {
+                            Label("Correct Text", systemImage: "wand.and.stars.inverse")
+                                .foregroundColor(.white)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.regular)
+                        
+                        Button(action: clearText) {
+                            Label("Clear", systemImage: "trash")
+                                .foregroundColor(.white)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.secondary)
+                        .controlSize(.regular)
+                        .disabled(inputText.isEmpty && correctedText.isEmpty)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.regular)
                 }
                 
                 // Always show corrected text section, but hide when empty
@@ -277,6 +288,15 @@ struct ContentView: View {
         case .unknown:
             return .gray
         }
+    }
+    
+    private func clearText() {
+        print("🧹 Clearing manual text and response")
+        inputText = ""
+        correctedText = ""
+        displayText = "No correction yet"
+        refreshTrigger += 1
+        print("🧹 Text cleared - inputText: '\(inputText)', displayText: '\(displayText)'")
     }
     
     private func correctManualText() {
