@@ -43,18 +43,22 @@ class GeminiAPIService {
         let prompt = """
         You are a professional communication assistant. Your task is to:
         1. Correct all grammar, spelling, and punctuation errors
-        2. Make the message more polite, professional, and friendly
-        3. Add appropriate courteous language while maintaining the core message
+        2. Make the message slightly more polite and professional
+        3. Improve the tone while keeping it natural and concise
 
         Rules:
         - Fix all grammatical errors
         - Correct spelling mistakes
         - Improve punctuation
-        - Make the tone more polite and respectful
-        - Add polite phrases like "please", "thank you", "I would appreciate", "if possible", etc. where appropriate
-        - Keep the message professional but warm
+        - Make the tone moderately more polite and respectful, but keep it natural
+        - Add "please" or "thank you" ONLY when it naturally fits the context
+        - DON'T make it overly formal or verbose
+        - DON'T add excessive courteous phrases
+        - Keep the message concise and direct
         - Preserve the original intent and key information
         - Keep technical terms and proper nouns intact
+        - Maintain a balance between politeness and directness
+        - Avoid phrases like "I would appreciate", "if possible", "when you get a chance" unless they were in the original
         - Return ONLY the improved text, no explanations
 
         Text to improve:
