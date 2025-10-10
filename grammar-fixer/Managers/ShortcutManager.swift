@@ -9,25 +9,40 @@ import Foundation
 import Carbon
 import Combine
 
+enum CorrectionMode {
+    case grammarOnly
+    case polite
+}
+
 class ShortcutManager: ObservableObject {
     static let shared = ShortcutManager()
-    
+
     @Published var isRegistered: Bool = false
-    
-    private var hotKeyRef: EventHotKeyRef?
-    private var hotKeyID = EventHotKeyID(signature: 0x47464958, id: 1) // 'GFIX'
-    
+
+    private var grammarHotKeyRef: EventHotKeyRef?
+    private var politeHotKeyRef: EventHotKeyRef?
+    private var grammarHotKeyID = EventHotKeyID(signature: 0x47464958, id: 1) // 'GFIX'
+    private var politeHotKeyID = EventHotKeyID(signature: 0x50464958, id: 2) // 'PFIX'
+
     private init() {}
-    
+
     func registerGlobalShortcut() {
         unregisterGlobalShortcut() // Clean up any existing registration
-        
+
         var eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: OSType(kEventHotKeyPressed))
-        
+
         InstallEventHandler(
             GetApplicationEventTarget(),
             { (nextHandler, theEvent, userData) -> OSStatus in
-                ShortcutManager.shared.handleHotKeyEvent()
+                var hotKeyID = EventHotKeyID()
+                GetEventParameter(theEvent, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID), nil, MemoryLayout<EventHotKeyID>.size, nil, &hotKeyID)
+
+                if hotKeyID.id == 1 {
+                    ShortcutManager.shared.handleHotKeyEvent(mode: .grammarOnly)
+                } else if hotKeyID.id == 2 {
+                    ShortcutManager.shared.handleHotKeyEvent(mode: .polite)
+                }
+
                 return noErr
             },
             1,
@@ -35,39 +50,55 @@ class ShortcutManager: ObservableObject {
             nil,
             nil
         )
-        
-        let keyCode: UInt32 = 5 // G key
-        let modifiers: UInt32 = UInt32(cmdKey | shiftKey)
-        
-        let status = RegisterEventHotKey(
-            keyCode,
-            modifiers,
-            hotKeyID,
+
+        // Register Grammar shortcut (⌘+Shift+G)
+        let grammarKeyCode: UInt32 = 5 // G key
+        let grammarModifiers: UInt32 = UInt32(cmdKey | shiftKey)
+
+        let grammarStatus = RegisterEventHotKey(
+            grammarKeyCode,
+            grammarModifiers,
+            grammarHotKeyID,
             GetApplicationEventTarget(),
             0,
-            &hotKeyRef
+            &grammarHotKeyRef
         )
-        
-        if status != noErr {
-            isRegistered = false
-        } else {
-            isRegistered = true
-        }
+
+        // Register Polite shortcut (⌘+Shift+P)
+        let politeKeyCode: UInt32 = 35 // P key
+        let politeModifiers: UInt32 = UInt32(cmdKey | shiftKey)
+
+        let politeStatus = RegisterEventHotKey(
+            politeKeyCode,
+            politeModifiers,
+            politeHotKeyID,
+            GetApplicationEventTarget(),
+            0,
+            &politeHotKeyRef
+        )
+
+        isRegistered = (grammarStatus == noErr && politeStatus == noErr)
     }
-    
+
     func unregisterGlobalShortcut() {
-        if let hotKeyRef = hotKeyRef {
-            UnregisterEventHotKey(hotKeyRef)
-            self.hotKeyRef = nil
-            isRegistered = false
+        if let grammarHotKeyRef = grammarHotKeyRef {
+            UnregisterEventHotKey(grammarHotKeyRef)
+            self.grammarHotKeyRef = nil
         }
+
+        if let politeHotKeyRef = politeHotKeyRef {
+            UnregisterEventHotKey(politeHotKeyRef)
+            self.politeHotKeyRef = nil
+        }
+
+        isRegistered = false
     }
-    
-    private func handleHotKeyEvent() {
+
+    private func handleHotKeyEvent(mode: CorrectionMode) {
         guard SettingsManager.shared.isEnabled else {
             return
         }
-        
+
         guard AccessibilityManager.shared.hasPermissions() else {
             NotificationManager.shared.showNotification(
                 title: "Grammar Fixer",
@@ -75,9 +106,9 @@ class ShortcutManager: ObservableObject {
             )
             return
         }
-        
+
         if let selectedText = AccessibilityManager.shared.getSelectedText(), !selectedText.isEmpty {
-            TextSelectionManager.shared.processSelectedText(selectedText)
+            TextSelectionManager.shared.processSelectedText(selectedText, mode: mode)
         } else {
             NotificationManager.shared.showNotification(
                 title: "Grammar Fixer",

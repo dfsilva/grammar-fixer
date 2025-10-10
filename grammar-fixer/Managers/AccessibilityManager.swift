@@ -34,9 +34,15 @@ class AccessibilityManager {
     func requestPermissions() {
         requestAccessibilityPermission()
     }
-    
+
     func hasPermissions() -> Bool {
         return checkAccessibilityPermission()
+    }
+
+    func openAccessibilitySettings() {
+        // Open System Settings to Accessibility preferences
+        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
+        NSWorkspace.shared.open(url)
     }
     
     func getSelectedText() -> String? {

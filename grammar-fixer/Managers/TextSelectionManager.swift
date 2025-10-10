@@ -9,18 +9,21 @@ import Foundation
 
 class TextSelectionManager {
     static let shared = TextSelectionManager()
-    
+
     private init() {}
-    
-    func processSelectedText(_ text: String) {
+
+    func processSelectedText(_ text: String, mode: CorrectionMode = .grammarOnly) {
         Task {
-            let correctedText = await GrammarService.shared.correctText(text)
-            
+            let correctedText = await GrammarService.shared.correctText(text, mode: mode)
+
             DispatchQueue.main.async {
                 if AccessibilityManager.shared.replaceSelectedText(with: correctedText) {
+                    let title = mode == .polite ? "Text Polished" : "Grammar Corrected"
+                    let body = mode == .polite ? "Text has been corrected and made more polite." : "Text has been corrected successfully."
+
                     NotificationManager.shared.showNotification(
-                        title: "Grammar Corrected",
-                        body: "Text has been corrected successfully."
+                        title: title,
+                        body: body
                     )
                 } else {
                     NotificationManager.shared.showNotification(
@@ -31,10 +34,10 @@ class TextSelectionManager {
             }
         }
     }
-    
-    func manualCorrection(_ text: String, completion: @escaping (String?, Error?) -> Void) {
+
+    func manualCorrection(_ text: String, mode: CorrectionMode = .grammarOnly, completion: @escaping (String?, Error?) -> Void) {
         Task {
-            let correctedText = await GrammarService.shared.correctText(text)
+            let correctedText = await GrammarService.shared.correctText(text, mode: mode)
             completion(correctedText, nil)
         }
     }

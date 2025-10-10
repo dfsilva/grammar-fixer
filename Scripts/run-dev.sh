@@ -40,47 +40,29 @@ echo "🔓 Removing sandbox restrictions..."
 
 # Step 4: Run the app with console output
 echo "🚀 Launching $PROJECT_NAME with console output..."
-APP_PATH="$HOME/Library/Developer/Xcode/DerivedData/grammar-fixer-fcjvhhvcfzakzmavavyjfqhfumds/Build/Products/Debug/grammar-fixer.app"
 
-if [ -d "$APP_PATH" ]; then
-    # Kill any existing instances first
-    pkill -f "$PROJECT_NAME" 2>/dev/null || true
-    sleep 1
-    
-    # Run the app executable directly to see console output
-    EXECUTABLE_PATH="$APP_PATH/Contents/MacOS/grammar-fixer"
-    if [ -f "$EXECUTABLE_PATH" ]; then
-        echo "🖥️  Running with console output (Ctrl+C to stop)..."
-        "$EXECUTABLE_PATH"
-    else
-        echo "❌ Executable not found at: $EXECUTABLE_PATH"
-        exit 1
-    fi
+# Dynamically find the most recently built app in DerivedData
+echo "🔍 Finding the latest built app in DerivedData..."
+DERIVED_PATH=$(find ~/Library/Developer/Xcode/DerivedData/grammar-fixer-*/Build/Products/Debug/grammar-fixer.app -type d 2>/dev/null | head -1)
+
+if [ -z "$DERIVED_PATH" ]; then
+    echo "❌ Could not find the built app in DerivedData"
+    echo "💡 Try building the project first with: xcodebuild -project grammar-fixer.xcodeproj -scheme grammar-fixer -configuration Debug build"
+    exit 1
+fi
+
+echo "📍 Found app at: $DERIVED_PATH"
+
+# Kill any existing instances first
+pkill -f "$PROJECT_NAME" 2>/dev/null || true
+sleep 1
+
+# Run the app executable directly to see console output
+EXECUTABLE_PATH="$DERIVED_PATH/Contents/MacOS/grammar-fixer"
+if [ -f "$EXECUTABLE_PATH" ]; then
+    echo "🖥️  Running with console output (Ctrl+C to stop)..."
+    "$EXECUTABLE_PATH"
 else
-    echo "❌ App not found at expected location: $APP_PATH"
-    echo "🔍 Searching for app in DerivedData..."
-    
-    # Try to find the app in DerivedData
-    DERIVED_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "grammar-fixer.app" -type d 2>/dev/null | head -1)
-    
-    if [ -n "$DERIVED_PATH" ]; then
-        echo "📍 Found app at: $DERIVED_PATH"
-        
-        # Kill any existing instances first
-        pkill -f "$PROJECT_NAME" 2>/dev/null || true
-        sleep 1
-        
-        # Run the app executable directly
-        EXECUTABLE_PATH="$DERIVED_PATH/Contents/MacOS/grammar-fixer"
-        if [ -f "$EXECUTABLE_PATH" ]; then
-            echo "🖥️  Running with console output (Ctrl+C to stop)..."
-            "$EXECUTABLE_PATH"
-        else
-            echo "❌ Executable not found at: $EXECUTABLE_PATH"
-            exit 1
-        fi
-    else
-        echo "❌ Could not find the built app"
-        exit 1
-    fi
+    echo "❌ Executable not found at: $EXECUTABLE_PATH"
+    exit 1
 fi
