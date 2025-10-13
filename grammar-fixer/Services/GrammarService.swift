@@ -72,12 +72,20 @@ class GrammarService: ObservableObject {
                 case .groq:
                     if mode == .polite {
                         correctedText = try await groqService.correctGrammarAndMakePolite(text)
+                    } else if mode == .translateToPortuguese {
+                        correctedText = try await groqService.translateToPortuguese(text)
+                    } else if mode == .translateToEnglish {
+                        correctedText = try await groqService.translateToEnglish(text)
                     } else {
                         correctedText = try await groqService.correctGrammar(text)
                     }
                 case .gemini:
                     if mode == .polite {
                         correctedText = try await geminiService.correctGrammarAndMakePolite(text)
+                    } else if mode == .translateToPortuguese {
+                        correctedText = try await geminiService.translateToPortuguese(text)
+                    } else if mode == .translateToEnglish {
+                        correctedText = try await geminiService.translateToEnglish(text)
                     } else {
                         correctedText = try await geminiService.correctGrammar(text)
                     }
@@ -102,18 +110,20 @@ class GrammarService: ObservableObject {
                         body: "API unavailable, using local spell checker as fallback"
                     )
                 } else {
+                    let modeDescription = mode == .polite ? "Polite mode" : "Translation"
                     NotificationManager.shared.showNotification(
                         title: "API Unavailable",
-                        body: "Polite mode requires API access. Please check your connection."
+                        body: "\(modeDescription) requires API access. Please check your connection."
                     )
-                    return text // Return original text for polite mode when API fails
+                    return text // Return original text when API fails
                 }
             }
-        } else if mode == .polite {
-            // Polite mode requires API
+        } else if mode != .grammarOnly {
+            // Non-grammar modes require API
+            let modeDescription = mode == .polite ? "Polite mode" : "Translation"
             NotificationManager.shared.showNotification(
                 title: "API Key Required",
-                body: "Polite mode requires an API key. Please configure one in Settings."
+                body: "\(modeDescription) requires an API key. Please configure one in Settings."
             )
             return text
         }

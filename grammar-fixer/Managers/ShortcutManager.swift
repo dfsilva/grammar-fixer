@@ -12,6 +12,8 @@ import Combine
 enum CorrectionMode {
     case grammarOnly
     case polite
+    case translateToPortuguese
+    case translateToEnglish
 }
 
 class ShortcutManager: ObservableObject {
@@ -21,8 +23,12 @@ class ShortcutManager: ObservableObject {
 
     private var grammarHotKeyRef: EventHotKeyRef?
     private var politeHotKeyRef: EventHotKeyRef?
+    private var translatePTHotKeyRef: EventHotKeyRef?
+    private var translateENHotKeyRef: EventHotKeyRef?
     private var grammarHotKeyID = EventHotKeyID(signature: 0x47464958, id: 1) // 'GFIX'
     private var politeHotKeyID = EventHotKeyID(signature: 0x50464958, id: 2) // 'PFIX'
+    private var translatePTHotKeyID = EventHotKeyID(signature: 0x54464958, id: 3) // 'TFIX'
+    private var translateENHotKeyID = EventHotKeyID(signature: 0x45464958, id: 4) // 'EFIX'
 
     private init() {}
 
@@ -41,6 +47,10 @@ class ShortcutManager: ObservableObject {
                     ShortcutManager.shared.handleHotKeyEvent(mode: .grammarOnly)
                 } else if hotKeyID.id == 2 {
                     ShortcutManager.shared.handleHotKeyEvent(mode: .polite)
+                } else if hotKeyID.id == 3 {
+                    ShortcutManager.shared.handleHotKeyEvent(mode: .translateToPortuguese)
+                } else if hotKeyID.id == 4 {
+                    ShortcutManager.shared.handleHotKeyEvent(mode: .translateToEnglish)
                 }
 
                 return noErr
@@ -64,8 +74,8 @@ class ShortcutManager: ObservableObject {
             &grammarHotKeyRef
         )
 
-        // Register Polite shortcut (⌘+Shift+P)
-        let politeKeyCode: UInt32 = 35 // P key
+        // Register Polite shortcut (⌘+Shift+F)
+        let politeKeyCode: UInt32 = 3 // F key
         let politeModifiers: UInt32 = UInt32(cmdKey | shiftKey)
 
         let politeStatus = RegisterEventHotKey(
@@ -77,7 +87,33 @@ class ShortcutManager: ObservableObject {
             &politeHotKeyRef
         )
 
-        isRegistered = (grammarStatus == noErr && politeStatus == noErr)
+        // Register Translate to PT shortcut (⌘+Shift+P)
+        let translatePTKeyCode: UInt32 = 35 // P key
+        let translatePTModifiers: UInt32 = UInt32(cmdKey | shiftKey)
+
+        let translatePTStatus = RegisterEventHotKey(
+            translatePTKeyCode,
+            translatePTModifiers,
+            translatePTHotKeyID,
+            GetApplicationEventTarget(),
+            0,
+            &translatePTHotKeyRef
+        )
+
+        // Register Translate to EN shortcut (⌘+Shift+E)
+        let translateENKeyCode: UInt32 = 14 // E key
+        let translateENModifiers: UInt32 = UInt32(cmdKey | shiftKey)
+
+        let translateENStatus = RegisterEventHotKey(
+            translateENKeyCode,
+            translateENModifiers,
+            translateENHotKeyID,
+            GetApplicationEventTarget(),
+            0,
+            &translateENHotKeyRef
+        )
+
+        isRegistered = (grammarStatus == noErr && politeStatus == noErr && translatePTStatus == noErr && translateENStatus == noErr)
     }
 
     func unregisterGlobalShortcut() {
@@ -89,6 +125,16 @@ class ShortcutManager: ObservableObject {
         if let politeHotKeyRef = politeHotKeyRef {
             UnregisterEventHotKey(politeHotKeyRef)
             self.politeHotKeyRef = nil
+        }
+
+        if let translatePTHotKeyRef = translatePTHotKeyRef {
+            UnregisterEventHotKey(translatePTHotKeyRef)
+            self.translatePTHotKeyRef = nil
+        }
+
+        if let translateENHotKeyRef = translateENHotKeyRef {
+            UnregisterEventHotKey(translateENHotKeyRef)
+            self.translateENHotKeyRef = nil
         }
 
         isRegistered = false

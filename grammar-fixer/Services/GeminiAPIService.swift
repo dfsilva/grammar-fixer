@@ -68,6 +68,49 @@ class GeminiAPIService {
         return try await makeRequest(prompt: prompt)
     }
 
+    func translateToPortuguese(_ text: String) async throws -> String {
+        let prompt = """
+        You are a professional translator. Your task is to translate the given text to Brazilian Portuguese (pt-BR).
+
+        Rules:
+        - Translate to natural Brazilian Portuguese
+        - Use Brazilian Portuguese expressions and vocabulary (not European Portuguese)
+        - Maintain the original tone and style
+        - Keep the same level of formality
+        - Preserve technical terms when appropriate, but explain them if needed
+        - Keep proper nouns unchanged
+        - Ensure the translation sounds natural to native Brazilian speakers
+        - Return ONLY the translated text, no explanations
+
+        Text to translate:
+        \(text)
+        """
+
+        return try await makeRequest(prompt: prompt)
+    }
+
+    func translateToEnglish(_ text: String) async throws -> String {
+        let prompt = """
+        You are a professional translator. Your task is to translate the given text to English (en-US).
+
+        Rules:
+        - Translate to natural, fluent English
+        - Use American English spelling and expressions
+        - Maintain the original tone and style
+        - Keep the same level of formality
+        - Preserve technical terms when appropriate
+        - Keep proper nouns unchanged
+        - Ensure the translation sounds natural to native English speakers
+        - If the text is already in English, improve grammar and clarity
+        - Return ONLY the translated text, no explanations
+
+        Text to translate:
+        \(text)
+        """
+
+        return try await makeRequest(prompt: prompt)
+    }
+
     private func makeTestRequest() async throws -> String {
         let apiKey = SettingsManager.shared.geminiAPIKey
         guard !apiKey.isEmpty else {

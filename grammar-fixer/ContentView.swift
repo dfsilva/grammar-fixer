@@ -135,7 +135,55 @@ struct ContentView: View {
                                 Text("Polite Mode")
                                     .font(.system(size: 11, weight: .medium))
                                     .foregroundColor(.secondary)
+                                Text("⌘ + Shift + F")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(.primary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: shortcutManager.isRegistered ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                                .foregroundColor(shortcutManager.isRegistered ? .green : .orange)
+                                .font(.system(size: 16))
+                        }
+
+                        Divider()
+
+                        HStack(spacing: 10) {
+                            Image(systemName: "globe")
+                                .font(.system(size: 18))
+                                .foregroundColor(.orange)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Translate to PT-BR")
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(.secondary)
                                 Text("⌘ + Shift + P")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(.primary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: shortcutManager.isRegistered ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                                .foregroundColor(shortcutManager.isRegistered ? .green : .orange)
+                                .font(.system(size: 16))
+                        }
+
+                        Divider()
+
+                        HStack(spacing: 10) {
+                            Image(systemName: "globe.americas.fill")
+                                .font(.system(size: 18))
+                                .foregroundColor(.green)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Translate to English")
+                                    .font(.system(size: 11, weight: .medium))
+                                    .foregroundColor(.secondary)
+                                Text("⌘ + Shift + E")
                                     .font(.system(size: 13, weight: .semibold))
                                     .foregroundColor(.primary)
                             }
@@ -199,12 +247,46 @@ struct ContentView: View {
                                 .cornerRadius(6)
                             }
                             .buttonStyle(.borderless)
+
+                            Button(action: {
+                                selectedMode = .translateToPortuguese
+                            }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "globe")
+                                        .font(.system(size: 10))
+                                    Text("PT-BR")
+                                        .font(.system(size: 10, weight: .medium))
+                                }
+                                .foregroundColor(selectedMode == .translateToPortuguese ? .white : .secondary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(selectedMode == .translateToPortuguese ? Color.orange : Color(NSColor.controlBackgroundColor))
+                                .cornerRadius(6)
+                            }
+                            .buttonStyle(.borderless)
+
+                            Button(action: {
+                                selectedMode = .translateToEnglish
+                            }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "globe.americas.fill")
+                                        .font(.system(size: 10))
+                                    Text("EN")
+                                        .font(.system(size: 10, weight: .medium))
+                                }
+                                .foregroundColor(selectedMode == .translateToEnglish ? .white : .secondary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(selectedMode == .translateToEnglish ? Color.green : Color(NSColor.controlBackgroundColor))
+                                .cornerRadius(6)
+                            }
+                            .buttonStyle(.borderless)
                         }
                     }
 
                     // Input area
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(selectedMode == .polite ? "Enter text to make polite:" : "Enter text to correct:")
+                        Text(selectedMode == .translateToPortuguese || selectedMode == .translateToEnglish ? "Enter text to translate:" : selectedMode == .polite ? "Enter text to make polite:" : "Enter text to correct:")
                             .font(.system(size: 11, weight: .medium))
                             .foregroundColor(.secondary)
 
@@ -235,9 +317,9 @@ struct ContentView: View {
                     HStack(spacing: 10) {
                         Button(action: correctManualText) {
                             HStack(spacing: 6) {
-                                Image(systemName: selectedMode == .polite ? "sparkle" : "sparkles")
+                                Image(systemName: selectedMode == .translateToPortuguese ? "globe" : selectedMode == .translateToEnglish ? "globe.americas.fill" : selectedMode == .polite ? "sparkle" : "sparkles")
                                     .font(.system(size: 12))
-                                Text(selectedMode == .polite ? "Make Polite" : "Fix Grammar")
+                                Text(selectedMode == .translateToPortuguese || selectedMode == .translateToEnglish ? "Translate" : selectedMode == .polite ? "Make Polite" : "Fix Grammar")
                                     .font(.system(size: 12, weight: .medium))
                             }
                             .foregroundColor(.white)
@@ -245,7 +327,7 @@ struct ContentView: View {
                             .padding(.vertical, 8)
                             .background(
                                 LinearGradient(
-                                    colors: selectedMode == .polite ? [Color.purple, Color.purple.opacity(0.8)] : [Color.blue, Color.blue.opacity(0.8)],
+                                    colors: selectedMode == .translateToPortuguese ? [Color.orange, Color.orange.opacity(0.8)] : selectedMode == .translateToEnglish ? [Color.green, Color.green.opacity(0.8)] : selectedMode == .polite ? [Color.purple, Color.purple.opacity(0.8)] : [Color.blue, Color.blue.opacity(0.8)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )

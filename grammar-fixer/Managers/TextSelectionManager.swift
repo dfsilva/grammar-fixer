@@ -18,8 +18,23 @@ class TextSelectionManager {
 
             DispatchQueue.main.async {
                 if AccessibilityManager.shared.replaceSelectedText(with: correctedText) {
-                    let title = mode == .polite ? "Text Polished" : "Grammar Corrected"
-                    let body = mode == .polite ? "Text has been corrected and made more polite." : "Text has been corrected successfully."
+                    let title: String
+                    let body: String
+
+                    switch mode {
+                    case .polite:
+                        title = "Text Polished"
+                        body = "Text has been corrected and made more polite."
+                    case .translateToPortuguese:
+                        title = "Translated to Portuguese"
+                        body = "Text has been translated to Brazilian Portuguese."
+                    case .translateToEnglish:
+                        title = "Translated to English"
+                        body = "Text has been translated to English."
+                    case .grammarOnly:
+                        title = "Grammar Corrected"
+                        body = "Text has been corrected successfully."
+                    }
 
                     NotificationManager.shared.showNotification(
                         title: title,
